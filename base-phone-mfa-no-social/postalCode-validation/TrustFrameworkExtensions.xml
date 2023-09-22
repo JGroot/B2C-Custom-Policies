@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" 
+    PolicySchemaVersion="0.3.0.0" 
+    TenantId="yourtenant.onmicrosoft.com" 
+    PolicyId="B2C_1A_TrustFrameworkExtensions" 
+    PublicPolicyUri="http://yourtenant.onmicrosoft.com/B2C_1A_TrustFrameworkExtensions">
+
+    <BasePolicy>
+        <TenantId>yourtenant.onmicrosoft.com</TenantId>
+        <PolicyId>B2C_1A_TrustFrameworkLocalization</PolicyId>
+    </BasePolicy>
+
+    <BuildingBlocks>
+        <ClaimsSchema>
+            <ClaimType Id="postalCode">
+                <DisplayName>Postal Code</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText />
+                <UserInputType>TextBox</UserInputType>
+            </ClaimType>
+        </ClaimsSchema>
+    </BuildingBlocks>
+
+    <ClaimsProviders>
+
+        <ClaimsProvider>
+            <DisplayName>Local Account</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="LocalAccountSignUpWithLogonEmail">
+                    <DisplayClaims>
+                        <DisplayClaim DisplayControlReferenceId="emailVerificationControl" />
+                        <DisplayClaim ClaimTypeReferenceId="displayName" Required="true" />
+                        <DisplayClaim ClaimTypeReferenceId="givenName" Required="true" />
+                        <DisplayClaim ClaimTypeReferenceId="surName" Required="true" />
+                        <DisplayClaim ClaimTypeReferenceId="postalCode" Required="true" />
+                        <DisplayClaim ClaimTypeReferenceId="newPassword" Required="true" />
+                        <DisplayClaim ClaimTypeReferenceId="reenterPassword" Required="true" />
+                    </DisplayClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="postalCode" />
+                    </OutputClaims>
+                    <ValidationTechnicalProfiles>
+                        <ValidationTechnicalProfile ReferenceId="ValidatePostalCodeViaHttps" />
+                    </ValidationTechnicalProfiles>
+                </TechnicalProfile>
+
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+        <ClaimsProvider>
+            <DisplayName>Azure Active Directory</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="AAD-UserWriteUsingLogonEmail">
+                    <PersistedClaims>
+                        <PersistedClaim ClaimTypeReferenceId="postalCode"/>
+                    </PersistedClaims>
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="AAD-UserWriteProfileUsingObjectId">
+                    <PersistedClaims>
+                        <PersistedClaim ClaimTypeReferenceId="postalCode"/>
+                    </PersistedClaims>
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="AAD-UserReadUsingEmailAddress">
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="postalCode"/>
+                    </OutputClaims>
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="AAD-UserReadUsingObjectId">
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="postalCode"/>
+                    </OutputClaims>
+                </TechnicalProfile>
+
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+        <ClaimsProvider>
+            <DisplayName>HTTPS Request Technical Profiles</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="ValidatePostalCodeViaHttps">
+                    <DisplayName>Check that the user has entered a valid access code by using Claims Transformations</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="ServiceUrl">https://postalcodevalidationpoc.azurewebsites.net/api/PostalCode/validate</Item>
+                        <Item Key="SendClaimsIn">QueryString</Item>
+                        <Item Key="AuthenticationType">None</Item>
+                        <Item Key="AllowInsecureAuthInProduction">true</Item>
+                        <Item Key="DefaultUserMessageIfRequestFailed">Postal Code is not valid. Please try again.</Item>
+                    </Metadata>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="postalCode" PartnerClaimType="postalCode" />
+                    </InputClaims>
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+    </ClaimsProviders>
+
+</TrustFrameworkPolicy>
